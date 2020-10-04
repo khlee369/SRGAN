@@ -48,3 +48,10 @@ class Generator(nn.Module):
         x = self.conv2(x)
 
         return x
+
+class Discriminator(nn.Module):
+    def __init__(self):
+        super(Discriminator, self).__init__()
+
+    def forward(self, x):
+        pass
