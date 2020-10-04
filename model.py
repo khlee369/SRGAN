@@ -40,7 +40,9 @@ class Generator(nn.Module):
         x = fx + x
 
         # Pixel Shuffler Upsampling
-        for _ in range(2):
+        # There are 2 Upsampling in Paper
+        # My model Upsample 3 times
+        for _ in range(3):
             x = self.P_conv(x)
             x = self.pix_shuffle(x)
             x = nn.PReLU()(x)
