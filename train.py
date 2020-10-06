@@ -17,7 +17,7 @@ def main():
     optimizer = optim.Adam(generator.parameters(), lr=0.0002, betas=(0.5, 0.999))
     dataset = FaceData()
     data_loader = DataLoader(dataset, batch_size, shuffle=True, num_workers=0, pin_memory=True, drop_last=True)
-    loss_fucntion = nn.L1Loss()
+    loss_content = nn.MSELoss()
 
     print("Start Training")
     current_epoch = 0
@@ -28,8 +28,8 @@ def main():
             img_GT = img_GT.cuda()
             img_Input = img_Input.cuda()
             result = generator(img_Input)
-            loss = loss_fucntion(result, img_GT)
-            loss.backward()
+            loss_total = loss_content(result, img_GT)
+            loss_total.backward()
             optimizer.step()
         save_image(denorm(result[0].cpu()), "./Result/{0}.png".format(epoch))
 
