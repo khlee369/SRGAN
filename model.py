@@ -21,7 +21,7 @@ class Generator(nn.Module):
 
     def forward(self, x):
         x = self.conv1(x)
-        x = nn.PReLU()(x)
+        x = nn.PReLU().cuda()(x)
         fx = x
         tx = x
 
@@ -29,7 +29,7 @@ class Generator(nn.Module):
         for _ in range(5):
             x = self.B_conv(tx)
             x = self.B_bn(x)
-            x = nn.PReLU()(x)
+            x = nn.PReLU().cuda()(x)
             x = self.B_conv(x)
             x = self.B_bn(x)
             x = tx + x
@@ -45,7 +45,7 @@ class Generator(nn.Module):
         for _ in range(3):
             x = self.P_conv(x)
             x = self.pix_shuffle(x)
-            x = nn.PReLU()(x)
+            x = nn.PReLU().cuda()(x)
 
         x = self.conv2(x)
 
