@@ -15,7 +15,7 @@ def main():
     batch_size = 8
     generator = Generator()
     optimizer = optim.Adam(generator.parameters(), lr=0.0002, betas=(0.5, 0.999))
-    dataset = FaceData()
+    dataset = FaceData('train')
     data_loader = DataLoader(dataset, batch_size, shuffle=True, num_workers=0, pin_memory=True, drop_last=True)
     loss_content = nn.MSELoss()
 
