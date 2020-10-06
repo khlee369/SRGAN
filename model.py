@@ -52,7 +52,7 @@ class Generator(nn.Module):
         return x
 
 class Discriminator(nn.Module):
-    def __init__(self, xh = 16, xw = 16):
+    def __init__(self, xh = 128, xw = 128):
         super(Discriminator, self).__init__()
 
         self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1)
