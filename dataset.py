@@ -6,13 +6,22 @@ import torch
 import torchvision.transforms as T
 import cv2
 
+train_path = "./../CelebA-HQ_Dataset/Train/"
+val_path = "./../CelebA-HQ_Dataset/Val/"
+
+input_folder = "HQ_32x32"
+gt_folder = "HQ_256x256"
 
 class FaceData(Dataset):
-    def __init__(self):
+    def __init__(self, dset):
         cwd = os.getcwd()
+        if dset == 'train':
+            dset_path = train_path
+        else:
+            dset_path = val_path
 
-        self.input_data_path = os.path.join(cwd, "./trainData/input")
-        self.gt_data_path = os.path.join(cwd, "./trainData/gt")
+        self.input_data_path = os.path.join(cwd, dset_path + input_folder)
+        self.gt_data_path = os.path.join(cwd, dset_path + gt_folder)
         self.input_data_list = os.walk(self.input_data_path).__next__()[2]
         self.gt_data_list = os.walk(self.gt_data_path).__next__()[2]
         self.input = T.Compose([
