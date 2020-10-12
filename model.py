@@ -98,5 +98,6 @@ class Discriminator(nn.Module):
         x = self.lin1(x.view(x.size()[0], -1))
         x = self.LReLU(x)
         x = self.lin2(x)
+        x = torch.sigmoid(x)
 
         return x

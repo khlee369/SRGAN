@@ -6,6 +6,8 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torchvision.utils import save_image
 from tqdm import tqdm
+from torchvision.modeels import vgg19
+
 
 def denorm(x):
     out = (x + 1) / 2
@@ -29,6 +31,10 @@ def main():
             img_Input = img_Input.cuda()
             result = generator(img_Input)
             loss_total = loss_content(result, img_GT)
+
+            if step%100 == 0:
+                print('\n',"Loss : {:.4f}".format(loss_total.item()))
+
             loss_total.backward()
             optimizer.step()
         save_image(denorm(result[0].cpu()), "./Result/{0}.png".format(epoch))
