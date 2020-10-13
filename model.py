@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# input:   3 x 16 x 16
-# output:  3 x 128 x 128
+# input:   3 x 32 x 32
+# output:  3 x 256 x 256
 
 class Generator(nn.Module):
     def __init__(self):
@@ -52,7 +52,7 @@ class Generator(nn.Module):
         return x
 
 class Discriminator(nn.Module):
-    def __init__(self, xh = 128, xw = 128):
+    def __init__(self, xh = 256, xw = 256):
         super(Discriminator, self).__init__()
 
         self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1)
