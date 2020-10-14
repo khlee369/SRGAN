@@ -18,8 +18,8 @@ def main():
     batch_size = 32
     generator = Generator().cuda()
     discriminator = Discriminator().cuda()
-    optimizer_G = optim.Adam(generator.parameters(), lr=0.0002, betas=(0.5, 0.999))
-    optimizer_D = optim.Adam(discriminator.parameters(), lr=0.0002, betas=(0.5, 0.999))
+    optimizer_G = optim.Adam(generator.parameters(), lr=0.0002)
+    optimizer_D = optim.Adam(discriminator.parameters(), lr=0.0002)
     dataset = FaceData('train')
     data_loader = DataLoader(dataset, batch_size, shuffle=True, num_workers=0, pin_memory=True, drop_last=True)
     MSE = nn.MSELoss()
@@ -66,7 +66,8 @@ def main():
             # loss_D.backward()
             # optimizer_D.step()
         generator.eval()
-        save_image(denorm(img_SR[0].cpu()), "./Result/{0}.png".format(epoch))
+        save_image(denorm(img_SR[0].cpu()), "./Result/{0}_SR.png".format(epoch))
+        save_image(denorm(img_GT[0].cpu()), "./Result/{0}_GT.png".format(epoch))
 
 if __name__ == "__main__":
     main()
