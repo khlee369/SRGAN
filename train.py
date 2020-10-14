@@ -15,7 +15,7 @@ def denorm(x):
     return out.clamp(0, 1)
 
 def main():
-    batch_size = 1
+    batch_size = 32
     generator = Generator().cuda()
     discriminator = Discriminator().cuda()
     optimizer_G = optim.Adam(generator.parameters(), lr=0.0002, betas=(0.5, 0.999))
@@ -46,8 +46,8 @@ def main():
             real = discriminator(img_GT)
 
             loss_content = MSE(vgg_net(img_SR), vgg_net(img_GT))
-            loss_D = BCE(fake, torch.zeros(batch_size, 1).cuda()) + \
-                     BCE(real, torch.ones(batch_size, 1).cuda())
+            loss_D = BCE(fake, torch.zeros(batch_size, 1).cuda())
+                     # BCE(real, torch.ones(batch_size, 1).cuda())
             loss_total = loss_content + loss_D
 
             if step%100 == 0:
@@ -55,10 +55,11 @@ def main():
                 print("Loss_D : {:.4f}".format(loss_D.item()))
                 print("Loss : {:.4f}".format(loss_total.item()))
 
-            # loss_total.backward()
+            loss_total.backward()
             # loss_content.backward(retain_graph=True)
-            # optimizer_G.step()
-            loss_D.backward()
+            optimizer_G.step()
+
+            # loss_D.backward()
             optimizer_D.step()
         save_image(denorm(img_SR[0].cpu()), "./Result/{0}.png".format(epoch))
 
