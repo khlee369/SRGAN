@@ -82,6 +82,55 @@ class GModel(nn.Module):
 
         return x
 
+class DBlock(nn.Module):
+    def __init__(self, inchannel, outchannel, stride):
+        super(DBlock, self).__init__()
+
+        self.conv = nn.Conv2d(inchannel, outchannel, kernel_size=3, stride=stride, padding=1)
+        self.bn = nn.BatchNorm2d(outchannel)
+        self.lrelu = nn.LeakyReLU(0.2)
+
+    def forward(self, x):
+        x = self.conv(x)
+        x = self.bn(x)
+        x = self.lrelu(x)
+        return x
+
+class DModel(nn.Module):
+    def __init__(self, xh=128, xw=128):
+        super(DModel, self).__init__()
+
+        self.block1 = nn.Sequential(
+            nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),
+            nn.LeakyReLU(0.2)
+        )
+        self.block2 = DBlock(64, 64, 2)
+        self.block3 = DBlock(64, 128, 1)
+        self.block4 = DBlock(128, 128, 2)
+        self.block5 = DBlock(128, 256, 1)
+        self.block6 = DBlock(256, 256, 2)
+        self.block7 = DBlock(256, 512, 1)
+        self.block8 = DBlock(512, 512, 2)
+
+        self.block9 = nn.Sequential(
+            nn.Linear(512 * (xh//16) * (xw//16), 1204),
+            nn.LeakyReLU(0.2),
+            nn.Linear(1204, 1),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        x = self.block1(x)
+        x = self.block2(x)
+        x = self.block3(x)
+        x = self.block4(x)
+        x = self.block5(x)
+        x = self.block6(x)
+        x = self.block7(x)
+        x = self.block8(x)
+        x = self.block9(x)
+
+        return x
 
 class Generator(nn.Module):
     def __init__(self):
