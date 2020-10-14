@@ -9,47 +9,111 @@ class Generator(nn.Module):
     def __init__(self):
         super(Generator, self).__init__()
 
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=9, stride=1, padding=4)
+        self.conv964 = nn.Conv2d(3, 64, kernel_size=9, stride=1, padding=4)
+        self.PReLU964 = nn.PReLU().cuda()
 
-        self.rblocks = 5
-        self.B_convs = [nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1) for i in range(2*self.rblocks)]
-        self.B_bns = [nn.BatchNorm2d(64) for i in range(2*self.rblocks)]
+        self.B_conv1_1 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
+        self.B_bn1_1 = nn.BatchNorm2d(64)
+        self.B_PReLU1 = nn.PReLU().cuda()
+        self.B_conv1_2 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
+        self.B_bn1_2 = nn.BatchNorm2d(64)
 
-        self.pblocks = 2
-        self.P_convs = [nn.Conv2d(64, 256, kernel_size=3, stride=1, padding=1) for i in range(self.pblocks)]
+        self.B_conv2_1 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
+        self.B_bn2_1 = nn.BatchNorm2d(64)
+        self.B_PReLU2 = nn.PReLU().cuda()
+        self.B_conv2_2 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
+        self.B_bn2_2 = nn.BatchNorm2d(64)
+
+        self.B_conv3_1 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
+        self.B_bn3_1 = nn.BatchNorm2d(64)
+        self.B_PReLU3 = nn.PReLU().cuda()
+        self.B_conv3_2 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
+        self.B_bn3_2 = nn.BatchNorm2d(64)
+
+        self.B_conv4_1 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
+        self.B_bn4_1 = nn.BatchNorm2d(64)
+        self.B_PReLU4 = nn.PReLU().cuda()
+        self.B_conv4_2 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
+        self.B_bn4_2 = nn.BatchNorm2d(64)
+
+        self.B_conv5_1 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
+        self.B_bn5_1 = nn.BatchNorm2d(64)
+        self.B_PReLU5 = nn.PReLU().cuda()
+        self.B_conv5_2 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
+        self.B_bn5_2 = nn.BatchNorm2d(64)
+
+        self.conv364 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
+        self.bn364 = nn.BatchNorm2d(64)
+
+        self.P_conv1 = nn.Conv2d(64, 256, kernel_size=3, stride=1, padding=1)
+        self.P_PReLU1 = nn.PReLU().cuda()
+        self.P_conv2 = nn.Conv2d(64, 256, kernel_size=3, stride=1, padding=1)
+        self.P_PReLU2 = nn.PReLU().cuda()
+
         self.pix_shuffle = nn.PixelShuffle(2)
 
-        self.conv2 = nn.Conv2d(64, 3, kernel_size=9, stride=1, padding=4)
+        self.conv93 = nn.Conv2d(64, 3, kernel_size=9, stride=1, padding=4)
 
     def forward(self, x):
-        x = self.conv1(x)
-        x = nn.PReLU().cuda()(x)
+        x = self.conv964(x)
+        x = self.PReLU964(x)
         fx = x
         tx = x
 
         # B residual blocks
-        for i in range(0, 2*self.rblocks, 2):
-            x = self.B_convs[i](tx)
-            x = self.B_bns[i](x)
-            x = nn.PReLU().cuda()(x)
-            x = self.B_convs[i+1](x)
-            x = self.B_bns[i+1](x)
-            x = tx + x
-            tx = x
+        x = self.B_conv1_1(x)
+        x = self.B_bn1_1(x)
+        x = self.B_PReLU1(x)
+        x = self.B_conv1_2(x)
+        x = self.B_bn1_2(x)
+        x = tx + x
+        tx = x
 
-        x = self.B_conv(tx)
-        x = self.B_bn(x)
-        x = fx + x
+        x = self.B_conv2_1(x)
+        x = self.B_bn2_1(x)
+        x = self.P_PReLU2(x)
+        x = self.B_conv2_2(x)
+        x = self.B_bn2_2(x)
+        x = tx + x
+        tx = x
 
-        # Pixel Shuffler Upsampling
-        # There are 2 Upsampling in Paper
-        # My model Upsample 3 times
-        for i in range(2):
-            x = self.P_convs[i](x)
-            x = self.pix_shuffle(x)
-            x = nn.PReLU().cuda()(x)
+        x = self.B_conv3_1(x)
+        x = self.B_bn3_1(x)
+        x = self.B_PReLU3(x)
+        x = self.B_conv3_2(x)
+        x = self.B_bn3_2(x)
+        x = tx + x
+        tx = x
 
-        x = self.conv2(x)
+        x = self.B_conv4_1(x)
+        x = self.B_bn4_1(x)
+        x = self.B_PReLU4(x)
+        x = self.B_conv4_2(x)
+        x = self.B_bn4_2(x)
+        x = tx + x
+        tx = x
+
+        x = self.B_conv5_1(x)
+        x = self.B_bn5_1(x)
+        x = self.B_PReLU5(x)
+        x = self.B_conv5_2(x)
+        x = self.B_bn5_2(x)
+        x = tx + x
+        
+        x = self.conv364(x)
+        x = self.bn364(x)
+        x = x + fx
+
+        # Upsampling
+        x = self.P_conv1(x)
+        x = self.pix_shuffle(x)
+        x = self.P_PReLU1(x)
+
+        x = self.P_conv2(x)
+        x = self.pix_shuffle(x)
+        x = self.P_PReLU2(x)
+
+        x = self.conv93(x)
 
         return x
 

@@ -27,13 +27,15 @@ def main():
 
     # content loss, perceptual loss vgg / i,j == 5,4
     vgg_net = vgg19(pretrained=True).features[:36].cuda()
-
+    vgg_net.eval()
     print("Start Training")
     current_epoch = 0
     for epoch in range(current_epoch, 100):
+        discriminator.train()
+        generator.train()
         for step, (img_Input, img_GT) in tqdm(enumerate(data_loader)):
             optimizer_G.zero_grad()
-            optimizer_D.zero_grad()
+            # optimizer_D.zero_grad()
 
             img_GT = img_GT.cuda()
             img_Input = img_Input.cuda()
@@ -42,25 +44,28 @@ def main():
             # print()
             # print(img_SR.shape)
             # print(img_GT.shape)
-            fake = discriminator(img_SR)
-            real = discriminator(img_GT)
+            # fake = discriminator(img_SR)
+            # real = discriminator(img_GT)
 
-            loss_content = MSE(vgg_net(img_SR), vgg_net(img_GT))
-            loss_D = BCE(fake, torch.zeros(batch_size, 1).cuda())
+            # loss_content = MSE(vgg_net(img_SR), vgg_net(img_GT))
+            loss_content = MSE(img_SR, img_GT)
+            # loss_D = BCE(fake, torch.zeros(batch_size, 1).cuda())
                      # BCE(real, torch.ones(batch_size, 1).cuda())
-            loss_total = loss_content + loss_D
+            # loss_total = loss_content + loss_D
 
             if step%100 == 0:
                 print('\n',"Loss_content : {:.4f}".format(loss_content.item()))
-                print("Loss_D : {:.4f}".format(loss_D.item()))
-                print("Loss : {:.4f}".format(loss_total.item()))
+                # print("Loss_D : {:.4f}".format(loss_D.item()))
+                # print("Loss : {:.4f}".format(loss_total.item()))
 
-            loss_total.backward()
+            # loss_total.backward()
             # loss_content.backward(retain_graph=True)
+            loss_content.backward()
             optimizer_G.step()
 
             # loss_D.backward()
-            optimizer_D.step()
+            # optimizer_D.step()
+        generator.eval()
         save_image(denorm(img_SR[0].cpu()), "./Result/{0}.png".format(epoch))
 
 if __name__ == "__main__":
