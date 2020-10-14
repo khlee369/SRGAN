@@ -42,7 +42,7 @@ class Generator(nn.Module):
         # Pixel Shuffler Upsampling
         # There are 2 Upsampling in Paper
         # My model Upsample 3 times
-        for _ in range(3):
+        for _ in range(2):
             x = self.P_conv(x)
             x = self.pix_shuffle(x)
             x = nn.PReLU().cuda()(x)
@@ -52,7 +52,7 @@ class Generator(nn.Module):
         return x
 
 class Discriminator(nn.Module):
-    def __init__(self, xh = 256, xw = 256):
+    def __init__(self, xh = 128, xw = 128):
         super(Discriminator, self).__init__()
 
         self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1)
