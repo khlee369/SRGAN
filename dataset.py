@@ -10,7 +10,7 @@ train_path = "./../CelebA-HQ_Dataset/Train/"
 val_path = "./../CelebA-HQ_Dataset/Val/"
 
 input_folder = "HQ_32x32"
-gt_folder = "HQ_256x256"
+gt_folder = "HQ_128x128"
 
 class FaceData(Dataset):
     def __init__(self, dset):
