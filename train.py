@@ -15,11 +15,12 @@ def denorm(x):
     return out.clamp(0, 1)
 
 def main():
-    batch_size = 32
+    batch_size = 16
     generator = Generator().cuda()
     discriminator = Discriminator().cuda()
-    optimizer_G = optim.Adam(generator.parameters(), lr=0.0002)
-    optimizer_D = optim.Adam(discriminator.parameters(), lr=0.0002)
+    optimizer_G = optim.Adam(generator.parameters()
+    )
+    optimizer_D = optim.Adam(discriminator.parameters())
     dataset = FaceData('train')
     data_loader = DataLoader(dataset, batch_size, shuffle=True, num_workers=0, pin_memory=True, drop_last=True)
     MSE = nn.MSELoss()
@@ -28,46 +29,66 @@ def main():
     # content loss, perceptual loss vgg / i,j == 5,4
     vgg_net = vgg19(pretrained=True).features[:36].cuda()
     vgg_net.eval()
+    for param in vgg_net.parameters():
+        param.requires_grad = False
+
+    discriminator.train()
+    generator.train()
+    optimizer_G.zero_grad()
+    optimizer_D.zero_grad()
+
     print("Start Training")
     current_epoch = 0
     for epoch in range(current_epoch, 100):
-        discriminator.train()
-        generator.train()
         for step, (img_Input, img_GT) in tqdm(enumerate(data_loader)):
-            optimizer_G.zero_grad()
-            # optimizer_D.zero_grad()
 
             img_GT = img_GT.cuda()
             img_Input = img_Input.cuda()
+
+            # Discriminator update
             img_SR = generator(img_Input)
+            fake = discriminator(img_SR)
+            real = discriminator(img_GT)
 
-            # print()
-            # print(img_SR.shape)
-            # print(img_GT.shape)
-            # fake = discriminator(img_SR)
-            # real = discriminator(img_GT)
+            loss_Dreal = 0.001 * BCE(real, torch.ones(batch_size, 1).cuda())
+            if epoch > 0:
+                discriminator.zero_grad()
+                loss_Dreal.backward(retain_graph=True)
+                optimizer_D.step()
 
-            # loss_content = MSE(vgg_net(img_SR), vgg_net(img_GT))
+            # Generator update
+            img_SR = generator(img_Input)
             loss_content = MSE(img_SR, img_GT)
-            # loss_D = BCE(fake, torch.zeros(batch_size, 1).cuda())
-                     # BCE(real, torch.ones(batch_size, 1).cuda())
-            # loss_total = loss_content + loss_D
+            loss_vgg = 0.006 * MSE(vgg_net(img_SR), vgg_net(img_GT))
+            fake = discriminator(img_SR)
+            loss_Dfake = BCE(fake, torch.zeros(batch_size, 1).cuda())
 
-            if step%100 == 0:
-                print('\n',"Loss_content : {:.4f}".format(loss_content.item()))
+            loss_G = loss_content + loss_vgg + loss_Dfake
+            generator.zero_grad()
+            loss_G.backward()
+            # loss_Dfake.backward()
+            optimizer_G.step()
+
+            if step%10 == 0:
+                # :.10f
+                loss_D = loss_Dfake + loss_Dreal
+                print()
+                print("fake out : {}".format(fake.mean().item()))
+                print("real out : {}".format(real.mean().item()))
+                print("Loss_Dfake :   {}".format(loss_Dfake.item()))
+                print("Loss_Dreal :   {}".format(loss_Dreal.item()))
+                print("Loss_D :       {}".format(loss_D.item()))
+                print("Loss_vgg :     {}".format(loss_vgg.item()))
+                print("Loss_content : {}".format(loss_content.item()))
+                print("Loss_G :       {}".format(loss_G.item()))
+                print("Loss_Total :   {}".format((loss_G + loss_D).item()))
                 # print("Loss_D : {:.4f}".format(loss_D.item()))
                 # print("Loss : {:.4f}".format(loss_total.item()))
 
-            # loss_total.backward()
-            # loss_content.backward(retain_graph=True)
-            loss_content.backward()
-            optimizer_G.step()
-
-            # loss_D.backward()
-            # optimizer_D.step()
         generator.eval()
         save_image(denorm(img_SR[0].cpu()), "./Result/{0}_SR.png".format(epoch))
         save_image(denorm(img_GT[0].cpu()), "./Result/{0}_GT.png".format(epoch))
+        generator.train()
 
 if __name__ == "__main__":
     main()
