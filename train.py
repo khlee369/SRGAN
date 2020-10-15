@@ -49,12 +49,13 @@ def main():
             img_SR = generator(img_Input)
             fake = discriminator(img_SR)
             real = discriminator(img_GT)
-
+            loss_Dfake = 0.001 * BCE(fake, torch.zeros(batch_size, 1).cuda())
             loss_Dreal = 0.001 * BCE(real, torch.ones(batch_size, 1).cuda())
-            if epoch > 0:
-                discriminator.zero_grad()
-                loss_Dreal.backward(retain_graph=True)
-                optimizer_D.step()
+            loss_D = 0.001 * (loss_Dfake + loss_Dreal)
+            # if epoch > 0:
+            discriminator.zero_grad()
+            loss_D.backward(retain_graph=True)
+            optimizer_D.step()
 
             # Generator update
             img_SR = generator(img_Input)
@@ -71,7 +72,6 @@ def main():
 
             if step%10 == 0:
                 # :.10f
-                loss_D = loss_Dfake + loss_Dreal
                 print()
                 print("fake out : {}".format(fake.mean().item()))
                 print("real out : {}".format(real.mean().item()))
