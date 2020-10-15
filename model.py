@@ -128,7 +128,7 @@ class Discriminator(nn.Module):
         x = self.block6(x)
         x = self.block7(x)
         x = self.block8(x)
-        x = self.block9(x)
+        x = self.block9(x.view(x.size()[0], -1))
 
         return x
 
