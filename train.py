@@ -45,36 +45,68 @@ def main():
             img_GT = img_GT.cuda()
             img_Input = img_Input.cuda()
 
+            # # Discriminator update
+            # img_SR = generator(img_Input)
+            # fake = discriminator(img_SR)
+            # real = discriminator(img_GT)
+            # loss_Dfake = 0.001 * BCE(fake, torch.zeros(batch_size, 1).cuda())
+            # loss_Dreal = 0.001 * BCE(real, torch.ones(batch_size, 1).cuda())
+            # loss_D = 0.001 * (loss_Dfake + loss_Dreal)
+            # # if epoch > 0:
+            # discriminator.zero_grad()
+            # loss_D.backward(retain_graph=True)
+            # optimizer_D.step()
+
+            # # Generator update
+            # img_SR = generator(img_Input)
+            # loss_content = MSE(img_SR, img_GT)
+            # loss_vgg = 0.006 * MSE(vgg_net(img_SR), vgg_net(img_GT))
+            # fake = discriminator(img_SR)
+            # loss_Dfake = 0.001 * BCE(fake, torch.zeros(batch_size, 1).cuda())
+
+            # loss_G = loss_content + loss_vgg + loss_Dfake
+            # generator.zero_grad()
+            # loss_G.backward()
+            # # loss_Dfake.backward()
+            # optimizer_G.step()
+
+
             # Discriminator update
-            img_SR = generator(img_Input)
-            fake = discriminator(img_SR)
-            real = discriminator(img_GT)
-            loss_Dfake = 0.001 * BCE(fake, torch.zeros(batch_size, 1).cuda())
-            loss_Dreal = 0.001 * BCE(real, torch.ones(batch_size, 1).cuda())
-            loss_D = 0.001 * (loss_Dfake + loss_Dreal)
-            # if epoch > 0:
             discriminator.zero_grad()
-            loss_D.backward(retain_graph=True)
+            D_real = discriminator(img_GT)
+            loss_Dreal = BCE(D_real, torch.ones(batch_size, 1).cuda())
+            loss_Dreal.backward()
+            D_x = D_real.mean().item()
+
+            img_SR = generator(img_Input)
+            D_fake = discriminator(img_SR.detach())
+            loss_Dfake = BCE(D_fake, torch.zeros(batch_size, 1).cuda())
+            loss_Dfake.backward()
+            DG_z = D_fake.mean().item()
+
+            loss_D = (loss_Dfake + loss_Dreal)
             optimizer_D.step()
 
             # Generator update
-            img_SR = generator(img_Input)
-            loss_content = MSE(img_SR, img_GT)
-            loss_vgg = 0.006 * MSE(vgg_net(img_SR), vgg_net(img_GT))
-            fake = discriminator(img_SR)
-            loss_Dfake = BCE(fake, torch.zeros(batch_size, 1).cuda())
-
-            loss_G = loss_content + loss_vgg + loss_Dfake
             generator.zero_grad()
+            loss_content = MSE(img_SR, img_GT)
+            loss_vgg = MSE(vgg_net(img_SR), vgg_net(img_GT))
+
+            # img_SR = generator(img_Input)
+            G_fake = discriminator(img_SR)
+            loss_Gfake = BCE(G_fake, torch.zeros(batch_size, 1).cuda())
+
+            loss_G = loss_content + 0.006* loss_vgg + 0.001 * loss_Gfake
             loss_G.backward()
             # loss_Dfake.backward()
             optimizer_G.step()
 
+
             if step%10 == 0:
                 # :.10f
                 print()
-                print("fake out : {}".format(fake.mean().item()))
-                print("real out : {}".format(real.mean().item()))
+                print("fake out : {}".format(DG_z))
+                print("real out : {}".format(D_x))
                 print("Loss_Dfake :   {}".format(loss_Dfake.item()))
                 print("Loss_Dreal :   {}".format(loss_Dreal.item()))
                 print("Loss_D :       {}".format(loss_D.item()))
